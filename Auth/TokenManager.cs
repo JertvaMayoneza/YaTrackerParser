@@ -1,9 +1,5 @@
 ﻿using System.Text.Json;
-using System.Net.Http;
-using System.Collections.Generic;
-using System;
-using System.IO;
-using System.Threading.Tasks;
+using YaTrackerParser.Models;
 
 namespace YaTrackerParser.Auth
 {
@@ -11,14 +7,6 @@ namespace YaTrackerParser.Auth
     {
         private const string TokenFilePath = "access_token.txt";
         private Token _token;
-
-        private class Token
-        {
-            public string? AccessToken { get; set; }
-            public int ExpiresIn { get; set; }
-            public string? RefreshToken { get; set; }
-            public string? TokenType { get; set; }
-        }
 
         public TokenManager() => LoadToken().GetAwaiter().GetResult();
 
@@ -35,13 +23,16 @@ namespace YaTrackerParser.Auth
                     {
                         Console.WriteLine("Failed to deserialize token. Проверьте файл токена.");
                     }
+                    else
+                    {
+                        _token.ExpirationTime = DateTime.UtcNow.AddSeconds(_token.ExpiresIn);
+                    }
                 }
                 else
                 {
                     Console.WriteLine("Token file is empty or missing. Проверьте файл токена.");
                 }
             }
-          
         }
 
         public async Task<string?> GetAccessTokenAsync()
@@ -60,15 +51,22 @@ namespace YaTrackerParser.Auth
             {
                 return true;
             }
-            // Placeholder check for expiration, replace with proper implementation
-            return DateTime.UtcNow > DateTime.UtcNow.AddSeconds(_token.ExpiresIn - 3600);
+
+            return DateTime.UtcNow >= _token.ExpirationTime;
         }
 
         private async Task RefreshToken()
         {
+            if (_token?.RefreshToken == null)
+            {
+                Console.WriteLine("No refresh token available. Проверьте файл токена.");
+                return;
+            }
+
             Console.WriteLine("Refreshing OAuth token...");
             using var client = new HttpClient();
             var request = new HttpRequestMessage(HttpMethod.Post, "https://oauth.yandex.ru/token");
+
             var content = new FormUrlEncodedContent(new[]
             {
                 new KeyValuePair<string, string>("grant_type", "refresh_token"),
@@ -76,26 +74,39 @@ namespace YaTrackerParser.Auth
                 new KeyValuePair<string, string>("client_id", "b51d2235324e4df49b37e2f471f7e139"),
                 new KeyValuePair<string, string>("client_secret", "8211ba2d3bef4ae19b9dd65d52279af3")
             });
+
             request.Content = content;
 
-            var response = await client.SendAsync(request);
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                Console.WriteLine($"Failed to refresh OAuth token. Status code: {response.StatusCode}");
-                return;
-            }
+                var response = await client.SendAsync(request);
 
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var newToken = JsonSerializer.Deserialize<Token>(responseContent);
-            if (newToken != null)
-            {
-                _token = newToken;
-                await File.WriteAllTextAsync(TokenFilePath, JsonSerializer.Serialize(_token));
-                Console.WriteLine("OAuth token successfully refreshed and saved.");
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Failed to refresh OAuth token. Status code: {response.StatusCode}");
+                    return;
+                }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var newToken = JsonSerializer.Deserialize<Token>(responseContent);
+
+                if (newToken != null)
+                {
+                    newToken.ExpirationTime = DateTime.UtcNow.AddSeconds(newToken.ExpiresIn);
+
+                    _token = newToken;
+                    await File.WriteAllTextAsync(TokenFilePath, JsonSerializer.Serialize(_token));
+
+                    Console.WriteLine("OAuth token successfully refreshed and saved.");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to deserialize new OAuth token. Проверьте файл токена.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine("Failed to deserialize new OAuth token. Проверьте файл токена.");
+                Console.WriteLine($"Exception occurred while refreshing token: {ex.Message}");
             }
         }
     }
