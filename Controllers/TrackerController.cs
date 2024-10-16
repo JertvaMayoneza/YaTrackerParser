@@ -19,7 +19,7 @@ namespace YaTrackerParser
         {
             try
             {
-                var tickets = await _getTicketsService.GetTicketsAsync();
+                var tickets = await _getTicketsService.SendPostRequestAsync();
                 return Ok(tickets);
             }
             catch (UnauthorizedAccessException ex)
