@@ -7,11 +7,11 @@ namespace YaTrackerParser
     [Route("[controller]")]
     public class TrackerController : ControllerBase
     {
-        private readonly GetTicketsService _getTicketsService;
+        private readonly TicketProcessor _ticketProcessor;
 
-        public TrackerController(GetTicketsService getTicketsService)
+        public TrackerController(TicketProcessor ticketProcessor)
         {
-            _getTicketsService = getTicketsService;
+            _ticketProcessor = ticketProcessor;
         }
 
         [HttpGet("tickets")]
@@ -19,13 +19,10 @@ namespace YaTrackerParser
         {
             try
             {
-                // Процесс получения тикетов и записи их в файл
-                await _getTicketsService.ProcessTicketsAsync();
+                await _ticketProcessor.ProcessTicketsAsync();
 
-                // Чтение отфильтрованных данных из файла
                 var filteredTickets = await System.IO.File.ReadAllTextAsync("filtered_tickets.txt");
 
-                // Возврат содержимого файла в ответе
                 return Ok(filteredTickets);
             }
             catch (UnauthorizedAccessException ex)
@@ -36,7 +33,7 @@ namespace YaTrackerParser
             {
                 return StatusCode(500, ex.Message);
             }
-            catch (Exception ex) // Для всех других исключений
+            catch (Exception ex)
             {
                 return StatusCode(500, $"Произошла ошибка: {ex.Message}");
             }
