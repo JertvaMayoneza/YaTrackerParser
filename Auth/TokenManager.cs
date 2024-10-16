@@ -37,7 +37,7 @@ namespace YaTrackerParser.Auth
 
         public async Task<string?> GetAccessTokenAsync()
         {
-            if (_token == null || IsTokenExpired())
+            if (IsTokenExpired())
             {
                 Console.WriteLine("Token is expired or missing, refreshing token...");
                 await RefreshToken();
