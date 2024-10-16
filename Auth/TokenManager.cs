@@ -14,16 +14,13 @@ namespace YaTrackerParser.Auth
 
         private class Token
         {
-            public string AccessToken { get; set; }
+            public string? AccessToken { get; set; }
             public int ExpiresIn { get; set; }
-            public string RefreshToken { get; set; }
-            public string TokenType { get; set; }
+            public string? RefreshToken { get; set; }
+            public string? TokenType { get; set; }
         }
 
-        public TokenManager()
-        {
-            LoadToken().GetAwaiter().GetResult();
-        }
+        public TokenManager() => LoadToken().GetAwaiter().GetResult();
 
         private async Task LoadToken()
         {
@@ -44,13 +41,10 @@ namespace YaTrackerParser.Auth
                     Console.WriteLine("Token file is empty or missing. Проверьте файл токена.");
                 }
             }
-            else
-            {
-                Console.WriteLine("Token file not found. Проверьте файл токена.");
-            }
+          
         }
 
-        public async Task<string> GetAccessTokenAsync()
+        public async Task<string?> GetAccessTokenAsync()
         {
             if (_token == null || IsTokenExpired())
             {
@@ -79,8 +73,8 @@ namespace YaTrackerParser.Auth
             {
                 new KeyValuePair<string, string>("grant_type", "refresh_token"),
                 new KeyValuePair<string, string>("refresh_token", _token.RefreshToken),
-                new KeyValuePair<string, string>("client_id", "b92e4087eab544fa8ec9e175b193b6ef"),
-                new KeyValuePair<string, string>("client_secret", "c953f50e8b0d495fa3f3dfab469b70d8")
+                new KeyValuePair<string, string>("client_id", "b51d2235324e4df49b37e2f471f7e139"),
+                new KeyValuePair<string, string>("client_secret", "8211ba2d3bef4ae19b9dd65d52279af3")
             });
             request.Content = content;
 
