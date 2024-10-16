@@ -1,6 +1,8 @@
-﻿using System.Net.Http.Headers;
+﻿using Newtonsoft.Json;
+using System.Net.Http.Headers;
 using System.Text;
 using YaTrackerParser.Auth;
+using YaTrackerParser.Models;
 
 namespace YaTrackerParser.Services
 {
@@ -14,8 +16,8 @@ namespace YaTrackerParser.Services
             _httpClientFactory = httpClientFactory;
             _tokenManager = tokenManager;
         }
-        
-        public async Task<string> SendPostRequestAsync()
+
+        public async Task ProcessTicketsAsync()
         {
             var accessToken = await _tokenManager.GetAccessTokenAsync();
             var client = _httpClientFactory.CreateClient("YaTrackerClient");
@@ -29,10 +31,24 @@ namespace YaTrackerParser.Services
             var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
 
             var response = await client.PostAsync("https://api.tracker.yandex.net/v2/issues/_search", content);
+            var jsonResponse = await response.Content.ReadAsStringAsync();
 
-            return await response.Content.ReadAsStringAsync();
+            var issues = JsonConvert.DeserializeObject<List<Issue>>(jsonResponse);
 
+            var filteredTickets = new StringBuilder();
+
+            foreach (var issue in issues)
+            {
+
+                if (!string.IsNullOrEmpty(issue.Key) && issue.UpdatedAt != DateTime.MinValue)
+                {
+                    filteredTickets.AppendLine($"Key: {issue.Key}, Summary: {issue.Summary}, UpdatedAt: {issue.UpdatedAt}");
+                }
+            }
+
+            await File.WriteAllTextAsync("filtered_tickets.txt", filteredTickets.ToString());
         }
+
 
     }
 }

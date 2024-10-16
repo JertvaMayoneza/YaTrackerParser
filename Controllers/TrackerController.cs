@@ -19,8 +19,14 @@ namespace YaTrackerParser
         {
             try
             {
-                var tickets = await _getTicketsService.SendPostRequestAsync();
-                return Ok(tickets);
+                // Процесс получения тикетов и записи их в файл
+                await _getTicketsService.ProcessTicketsAsync();
+
+                // Чтение отфильтрованных данных из файла
+                var filteredTickets = await System.IO.File.ReadAllTextAsync("filtered_tickets.txt");
+
+                // Возврат содержимого файла в ответе
+                return Ok(filteredTickets);
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -29,6 +35,10 @@ namespace YaTrackerParser
             catch (HttpRequestException ex)
             {
                 return StatusCode(500, ex.Message);
+            }
+            catch (Exception ex) // Для всех других исключений
+            {
+                return StatusCode(500, $"Произошла ошибка: {ex.Message}");
             }
         }
     }
