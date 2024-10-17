@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.IO;
-using System.Threading.Tasks;
 using YaTrackerParser.Services;
 
 namespace YaTrackerParser
@@ -36,10 +34,8 @@ namespace YaTrackerParser
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Произошла ошибка: {ex.Message}");
+                return BadRequest(ex.Message);
             }
         }
-
-
     }
 }

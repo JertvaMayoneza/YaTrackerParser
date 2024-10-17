@@ -20,19 +20,17 @@ public class TicketProcessor
         var issues = await _getTicketsService.GetTicketsAsync();
         var filteredTickets = _ticketFilterService.FilterTickets(issues);
 
-        var ticketDataList = filteredTickets.Select(issue => new TicketData
-        {
-            TicketNumber = issue.Key ?? "Не указано",
-            Time = issue.UpdatedAt?.ToString("g") ?? "Не указано",
-            Theme = issue.Summary ?? "Не указано"
-        }).ToList();
+        var ticketDataList = filteredTickets
+            .Select(issue => new TicketData
+            {
+                TicketNumber = issue.Key ?? "Не указано",
+                Time = issue.UpdatedAt?.ToString("g") ?? "Не указано",
+                Theme = issue.Summary ?? "Не указано"
+            })
+            .ToList();
 
-        await _fileWriterService.WriteToExcelAsync(ticketDataList);
+        _fileWriterService.WriteToExcel(ticketDataList);
 
-        return ticketDataList; // Возвращаем список тикетов
+        return ticketDataList;
     }
-
-
-
 }
-

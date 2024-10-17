@@ -8,7 +8,7 @@ namespace YaTrackerParser.Services
     {
         private readonly string _filePath = @"C:\Users\mrasv\OneDrive\Рабочий стол\Отчет.xlsx";
 
-        public async Task WriteToExcelAsync(IEnumerable<TicketData> tickets)
+        public void WriteToExcel(IEnumerable<TicketData> tickets)
         {
             if (!File.Exists(_filePath))
             {
@@ -18,7 +18,7 @@ namespace YaTrackerParser.Services
                 worksheet.Cell("B1").Value = "Время";
                 worksheet.Cell("C1").Value = "Тема";
 
-                await WriteTicketsToWorksheet(worksheet, tickets);
+                worksheet.Cell("A2").InsertData(tickets);
 
                 workbook.SaveAs(_filePath);
             }
@@ -43,22 +43,20 @@ namespace YaTrackerParser.Services
                         var existingTimeString = existingRow.Cell(2).GetString().Trim();
                         var ticketTimeString = ticket.Time.Trim();
 
-                        DateTime existingDateTime;
                         DateTime ticketDateTime;
 
+                        var formatStrings = new string[] { "dd.MM.yyyy HH:mm", "dd.MM.yyyy H:mm" };
+
                         if (!DateTime.TryParseExact(existingTimeString,
-                                                    "dd.MM.yyyy HH:mm",
+                                                    formatStrings,
                                                     CultureInfo.InvariantCulture,
                                                     DateTimeStyles.None,
-                                                    out existingDateTime) &&
-                            !DateTime.TryParseExact(existingTimeString,
-                                                    "dd.MM.yyyy H:mm",
-                                                    CultureInfo.InvariantCulture,
-                                                    DateTimeStyles.None,
-                                                    out existingDateTime))
+                                                    out var existingDateTime))
                         {
                             throw new FormatException($"Неверный формат даты: {existingTimeString}");
                         }
+
+                        //TODO: сделать тоже самое как выше
 
                         if (!DateTime.TryParseExact(ticketTimeString,
                                                     "dd.MM.yyyy HH:mm",
@@ -87,35 +85,16 @@ namespace YaTrackerParser.Services
                     }
                 }
 
-                if (newTickets.Any())
+                if (newTickets.Count > 0)
                 {
                     int startRow = 2; 
 
                     worksheet.Row(startRow).InsertRowsAbove(newTickets.Count);
 
-                    for (int i = 0; i < newTickets.Count; i++)
-                    {
-                        var ticket = newTickets[i];
-                        worksheet.Cell(startRow + i, 1).Value = ticket.TicketNumber;
-                        worksheet.Cell(startRow + i, 2).Value = ticket.Time;
-                        worksheet.Cell(startRow + i, 3).Value = ticket.Theme;
-                    }
+                    worksheet.Cell("A2").InsertData(newTickets);
                 }
 
                 workbook.Save();
-            }
-        }
-
-        private async Task WriteTicketsToWorksheet(IXLWorksheet worksheet, IEnumerable<TicketData> tickets)
-        {
-            int row = worksheet.LastRowUsed()?.RowNumber() + 1 ?? 2;
-
-            foreach (var ticket in tickets)
-            {
-                worksheet.Cell(row, 1).Value = ticket.TicketNumber;
-                worksheet.Cell(row, 2).Value = ticket.Time;
-                worksheet.Cell(row, 3).Value = ticket.Theme;
-                row++;
             }
         }
     }

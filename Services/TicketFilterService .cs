@@ -10,6 +10,5 @@ namespace YaTrackerParser.Services
                 .Where(issue => !string.IsNullOrEmpty(issue.Key) && issue.UpdatedAt != DateTime.MinValue)
                 .ToList();
         }
-
     }
 }

@@ -1,7 +1,7 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddSingleton<YaTrackerParser.Auth.TokenManager>();
+//builder.Services.AddSingleton<YaTrackerParser.Auth.TokenManager>();
 builder.Services.AddScoped<YaTrackerParser.Services.GetTicketsService>();
 builder.Services.AddScoped<YaTrackerParser.Services.TicketProcessor>();
 builder.Services.AddControllers();

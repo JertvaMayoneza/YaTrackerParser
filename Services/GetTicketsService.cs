@@ -9,17 +9,23 @@ namespace YaTrackerParser.Services
     public class GetTicketsService
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly TokenManager _tokenManager;
 
-        public GetTicketsService(IHttpClientFactory httpClientFactory, TokenManager tokenManager)
+        public GetTicketsService(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
-            _tokenManager = tokenManager;
         }
 
         public async Task<List<Issue>> GetTicketsAsync()
         {
-            var accessToken = await _tokenManager.GetAccessTokenAsync();
+            var result = new List<Issue>();
+
+            var accessToken = await TokenManager.GetAccessTokenAsync();
+
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                return result;
+            }
+
             var client = _httpClientFactory.CreateClient("YaTrackerClient");
 
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -32,7 +38,14 @@ namespace YaTrackerParser.Services
             var response = await client.PostAsync("https://api.tracker.yandex.net/v2/issues/_search", content);
             var jsonResponse = await response.Content.ReadAsStringAsync();
 
-            return JsonConvert.DeserializeObject<List<Issue>>(jsonResponse);
+            var responseResult = JsonConvert.DeserializeObject<List<Issue>>(jsonResponse);
+
+            if (responseResult != null)
+            {
+                result = responseResult;
+            }
+
+            return result;
         }
     }
 }

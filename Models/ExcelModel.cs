@@ -2,8 +2,8 @@
 {
     public class TicketData
     {
-        public string TicketNumber { get; set; }
-        public string Time { get; set; }
-        public string Theme { get; set; }
+        public string TicketNumber { get; set; } = null!;
+        public string Time { get; set; } = null!;
+        public string Theme { get; set; } = null!;
     }
 }

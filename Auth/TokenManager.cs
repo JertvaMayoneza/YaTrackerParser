@@ -3,26 +3,21 @@ using YaTrackerParser.Models;
 
 namespace YaTrackerParser.Auth
 {
-    public class TokenManager
+    public static class TokenManager
     {
         private const string TokenFilePath = "access_token.txt";
-        private Token _token;
 
-        public TokenManager() => LoadToken().GetAwaiter().GetResult();
-
-        private async Task LoadToken()
+        private static async Task<Token> LoadTokenAsync()
         {
             var tokenJson = await File.ReadAllTextAsync(TokenFilePath);
-            _token = JsonSerializer.Deserialize<Token>(tokenJson);
+            return JsonSerializer.Deserialize<Token>(tokenJson) ?? throw new Exception($"Не удалось прочитать токен из файла");
         }
 
-        public async Task<string?> GetAccessTokenAsync()
+        public static async Task<string?> GetAccessTokenAsync()
         {
-            if (_token == null)
-            {
-                await LoadToken();
-            }
-            return _token?.AccessToken;
+            var token = await LoadTokenAsync();
+
+            return token.AccessToken;
         }
     }
 }
