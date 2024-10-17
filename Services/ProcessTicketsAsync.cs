@@ -1,9 +1,5 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using YaTrackerParser.Models;
-using YaTrackerParser.Services;
+﻿using YaTrackerParser.Models;
+
 namespace YaTrackerParser.Services;
 
 public class TicketProcessor
@@ -23,6 +19,17 @@ public class TicketProcessor
     {
         var issues = await _getTicketsService.GetTicketsAsync();
         var filteredTickets = _ticketFilterService.FilterTickets(issues);
-        await _fileWriterService.WriteToFileAsync("filtered_tickets.txt", filteredTickets);
+
+        var ticketDataList = filteredTickets.Select(issue => new TicketData
+        {
+            TicketNumber = issue.Key ?? "Не указано",
+            Time = issue.UpdatedAt?.ToString("g") ?? "Не указано",
+            Theme = issue.Summary ?? "Не указано"
+        }).ToList();
+
+        await _fileWriterService.WriteToExcelAsync(ticketDataList);
     }
+
+
 }
+
