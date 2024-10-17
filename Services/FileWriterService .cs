@@ -1,5 +1,6 @@
 ﻿using ClosedXML.Excel;
 using YaTrackerParser.Models;
+using System.Globalization;
 
 namespace YaTrackerParser.Services
 {
@@ -29,22 +30,55 @@ namespace YaTrackerParser.Services
                 var existingTickets = worksheet.RowsUsed()
                     .Skip(1)
                     .ToDictionary(
-                        row => row.Cell(1).GetString(),
-                        row => row.Cell(2).GetString()
+                        row => row.Cell(1).GetString(), 
+                        row => row 
                     );
 
                 var newTickets = new List<TicketData>();
 
                 foreach (var ticket in tickets)
                 {
-                    if (existingTickets.TryGetValue(ticket.TicketNumber, out string existingDate))
+                    if (existingTickets.TryGetValue(ticket.TicketNumber, out var existingRow))
                     {
-                        if (string.Compare(ticket.Time, existingDate, StringComparison.Ordinal) > 0)
-                        {
-                            var rowToUpdate = worksheet.RowsUsed()
-                                .First(row => row.Cell(1).GetString() == ticket.TicketNumber);
+                        var existingTimeString = existingRow.Cell(2).GetString().Trim();
+                        var ticketTimeString = ticket.Time.Trim();
 
-                            rowToUpdate.Cell(2).Value = ticket.Time;
+                        DateTime existingDateTime;
+                        DateTime ticketDateTime;
+
+                        if (!DateTime.TryParseExact(existingTimeString,
+                                                    "dd.MM.yyyy HH:mm",
+                                                    CultureInfo.InvariantCulture,
+                                                    DateTimeStyles.None,
+                                                    out existingDateTime) &&
+                            !DateTime.TryParseExact(existingTimeString,
+                                                    "dd.MM.yyyy H:mm",
+                                                    CultureInfo.InvariantCulture,
+                                                    DateTimeStyles.None,
+                                                    out existingDateTime))
+                        {
+                            throw new FormatException($"Неверный формат даты: {existingTimeString}");
+                        }
+
+                        if (!DateTime.TryParseExact(ticketTimeString,
+                                                    "dd.MM.yyyy HH:mm",
+                                                    CultureInfo.InvariantCulture,
+                                                    DateTimeStyles.None,
+                                                    out ticketDateTime) &&
+                            !DateTime.TryParseExact(ticketTimeString,
+                                                    "dd.MM.yyyy H:mm",
+                                                    CultureInfo.InvariantCulture,
+                                                    DateTimeStyles.None,
+                                                    out ticketDateTime))
+                        {
+                            throw new FormatException($"Неверный формат даты: {ticketTimeString}");
+                        }
+
+                        if (ticketDateTime > existingDateTime)
+                        {
+                            worksheet.Row(existingRow.RowNumber()).Delete();
+
+                            newTickets.Add(ticket);
                         }
                     }
                     else
@@ -55,9 +89,8 @@ namespace YaTrackerParser.Services
 
                 if (newTickets.Any())
                 {
-                    int startRow = 2;
+                    int startRow = 2; 
 
-                    int rowCount = worksheet.LastRowUsed()?.RowNumber() ?? 1;
                     worksheet.Row(startRow).InsertRowsAbove(newTickets.Count);
 
                     for (int i = 0; i < newTickets.Count; i++)

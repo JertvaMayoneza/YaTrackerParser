@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.IO;
+using System.Threading.Tasks;
 using YaTrackerParser.Services;
 
 namespace YaTrackerParser
@@ -19,11 +21,10 @@ namespace YaTrackerParser
         {
             try
             {
-                await _ticketProcessor.ProcessTicketsAsync();
+                var tickets = await _ticketProcessor.ProcessTicketsAsync();
 
-                var filteredTickets = await System.IO.File.ReadAllTextAsync("filtered_tickets.txt");
-
-                return Ok(filteredTickets);
+                // Возвращаем список тикетов для проверки форматов
+                return Ok(tickets);
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -38,5 +39,7 @@ namespace YaTrackerParser
                 return StatusCode(500, $"Произошла ошибка: {ex.Message}");
             }
         }
+
+
     }
 }

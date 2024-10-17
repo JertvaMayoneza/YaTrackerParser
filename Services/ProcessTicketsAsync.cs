@@ -15,7 +15,7 @@ public class TicketProcessor
         _fileWriterService = fileWriterService;
     }
 
-    public async Task ProcessTicketsAsync()
+    public async Task<IEnumerable<TicketData>> ProcessTicketsAsync()
     {
         var issues = await _getTicketsService.GetTicketsAsync();
         var filteredTickets = _ticketFilterService.FilterTickets(issues);
@@ -28,7 +28,10 @@ public class TicketProcessor
         }).ToList();
 
         await _fileWriterService.WriteToExcelAsync(ticketDataList);
+
+        return ticketDataList; // Возвращаем список тикетов
     }
+
 
 
 }
