@@ -3,8 +3,11 @@ using YaTrackerParser.Services;
 
 namespace YaTrackerParser
 {
+    /// <summary>
+    /// Контроллер API
+    /// </summary>
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class TrackerController : ControllerBase
     {
         private readonly TicketProcessor _ticketProcessor;
@@ -14,24 +17,19 @@ namespace YaTrackerParser
             _ticketProcessor = ticketProcessor;
         }
 
+        /// <summary>
+        /// Получить список тикетов.
+        /// </summary>
+        /// <returns>Список тикетов.</returns>
         [HttpGet("tickets")]
         public async Task<IActionResult> GetTickets()
         {
             try
             {
                 var tickets = await _ticketProcessor.ProcessTicketsAsync();
-
-                // Возвращаем список тикетов для проверки форматов
                 return Ok(tickets);
             }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(ex.Message);
-            }
-            catch (HttpRequestException ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);

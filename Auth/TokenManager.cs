@@ -1,23 +1,35 @@
-﻿using System.Text.Json;
-using YaTrackerParser.Models;
-
-namespace YaTrackerParser.Auth
+﻿namespace YaTrackerParser.Auth
 {
+    /// <summary>
+    /// Класс для обработки токена
+    /// </summary>
     public static class TokenManager
     {
-        private const string TokenFilePath = "access_token.txt";
-
-        private static async Task<Token> LoadTokenAsync()
+        private static IConfiguration? _configuration;
+        /// <summary>
+        /// Инициализация токена
+        /// </summary>
+        /// <param name="configuration"></param>
+        public static void Initialize(IConfiguration configuration)
         {
-            var tokenJson = await File.ReadAllTextAsync(TokenFilePath);
-            return JsonSerializer.Deserialize<Token>(tokenJson) ?? throw new Exception($"Не удалось прочитать токен из файла");
+            _configuration = configuration;
         }
-
-        public static async Task<string?> GetAccessTokenAsync()
+        /// <summary>
+        /// Получение токена из конфигурации
+        /// </summary>
+        /// <returns>Возвращает экземпляр токена</returns>
+        /// <exception cref="Exception">Не удалось инициализировать конфигурацию</exception>
+        public static Token GetToken()
         {
-            var token = await LoadTokenAsync();
+            if (_configuration == null)
+                throw new Exception("Конфигурация не инициализирована");
 
-            return token.AccessToken;
+            var tokenSection = _configuration.GetSection("YandexTrackerAuth");
+
+            return new Token
+            {
+                AccessToken = tokenSection["access_token"],
+            };
         }
     }
 }

@@ -1,19 +1,62 @@
+using System.Reflection;
+using YaTrackerParser.Auth;
+using YaTrackerParser.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-//builder.Services.AddSingleton<YaTrackerParser.Auth.TokenManager>();
-builder.Services.AddScoped<YaTrackerParser.Services.GetTicketsService>();
-builder.Services.AddScoped<YaTrackerParser.Services.TicketProcessor>();
+TokenManager.Initialize(builder.Configuration);
+
+builder.Services.AddScoped<TicketProcessor>();
 builder.Services.AddControllers();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddScoped<GetTicketsService>(provider =>
+    new GetTicketsService(
+        provider.GetRequiredService<IHttpClientFactory>(),
+        provider.GetRequiredService<IConfiguration>()
+    ));
+
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<YaTrackerParser.Services.TicketFilterService>();
-builder.Services.AddScoped<YaTrackerParser.Services.FileWriterService>();
 
+builder.Services.AddSwaggerGen(c =>
+{
+    //c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    //{
+    //    Title = "Yandex Tracker API",
+    //    Version = "v1",
+    //    Description = "API для работы с тикетами Яндекс Трекера"
+    //});
 
-// Corrected base address for Yandex Tracker API
+    //c.AddSecurityDefinition("ApiKey", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    //{
+    //    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+    //    Description = "Введите ваш API ключ",
+    //    Name = "X-Api-Key",
+    //    Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey
+    //});
+
+    //c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    //{
+    //    {
+    //        new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    //        {
+    //            Reference = new Microsoft.OpenApi.Models.OpenApiReference
+    //            {
+    //                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+    //                Id = "ApiKey"
+    //            }
+    //        },
+    //        new string[] {}
+    //    }
+    //});
+
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+});
+
+builder.Services.AddScoped<TicketFilterService>();
+builder.Services.AddScoped<FileWriterService>();
+
 builder.Services.AddHttpClient("YaTrackerClient", client =>
 {
     client.BaseAddress = new Uri("https://api.tracker.yandex.net/");
@@ -21,17 +64,18 @@ builder.Services.AddHttpClient("YaTrackerClient", client =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Yandex Tracker API V1");
+    });
 }
 
+//app.UseMiddleware<ApiKeyMiddleware>();
+
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();

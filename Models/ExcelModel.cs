@@ -1,5 +1,8 @@
 ﻿namespace YaTrackerParser.Models
 {
+    /// <summary>
+    /// Модель тикетов для Excel
+    /// </summary>
     public class TicketData
     {
         public string TicketNumber { get; set; } = null!;

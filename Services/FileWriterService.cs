@@ -1,19 +1,27 @@
 ﻿using ClosedXML.Excel;
-using YaTrackerParser.Models;
 using System.Globalization;
+using YaTrackerParser.Models;
 
 namespace YaTrackerParser.Services
 {
+    /// <summary>
+    /// Сервис для записи тикетов в Excel
+    /// </summary>
     public class FileWriterService
     {
         private readonly string _filePath = @"C:\Users\mrasv\OneDrive\Рабочий стол\Отчет.xlsx";
-
+        /// <summary>
+        /// Метод для записи и обновления информации уже имеющихся тикетов в Excel
+        /// </summary>
+        /// <param name="tickets">Отфильтрованные по времени тикеты</param>
+        /// <exception cref="FormatException">Неверный формат даты</exception>
         public void WriteToExcel(IEnumerable<TicketData> tickets)
         {
             if (!File.Exists(_filePath))
             {
                 using var workbook = new XLWorkbook();
                 var worksheet = workbook.Worksheets.Add("Tickets");
+
                 worksheet.Cell("A1").Value = "Номер заявки";
                 worksheet.Cell("B1").Value = "Время";
                 worksheet.Cell("C1").Value = "Тема";
@@ -30,8 +38,8 @@ namespace YaTrackerParser.Services
                 var existingTickets = worksheet.RowsUsed()
                     .Skip(1)
                     .ToDictionary(
-                        row => row.Cell(1).GetString(), 
-                        row => row 
+                        row => row.Cell(1).GetString(),
+                        row => row
                     );
 
                 var newTickets = new List<TicketData>();
@@ -43,39 +51,25 @@ namespace YaTrackerParser.Services
                         var existingTimeString = existingRow.Cell(2).GetString().Trim();
                         var ticketTimeString = ticket.Time.Trim();
 
-                        DateTime ticketDateTime;
-
-                        var formatStrings = new string[] { "dd.MM.yyyy HH:mm", "dd.MM.yyyy H:mm" };
+                        var formatStrings = new[] { "dd.MM.yyyy HH:mm", "dd.MM.yyyy H:mm" };
 
                         if (!DateTime.TryParseExact(existingTimeString,
                                                     formatStrings,
                                                     CultureInfo.InvariantCulture,
                                                     DateTimeStyles.None,
-                                                    out var existingDateTime))
-                        {
-                            throw new FormatException($"Неверный формат даты: {existingTimeString}");
-                        }
-
-                        //TODO: сделать тоже самое как выше
-
-                        if (!DateTime.TryParseExact(ticketTimeString,
-                                                    "dd.MM.yyyy HH:mm",
-                                                    CultureInfo.InvariantCulture,
-                                                    DateTimeStyles.None,
-                                                    out ticketDateTime) &&
+                                                    out var existingDateTime) ||
                             !DateTime.TryParseExact(ticketTimeString,
-                                                    "dd.MM.yyyy H:mm",
+                                                    formatStrings,
                                                     CultureInfo.InvariantCulture,
                                                     DateTimeStyles.None,
-                                                    out ticketDateTime))
+                                                    out var ticketDateTime))
                         {
-                            throw new FormatException($"Неверный формат даты: {ticketTimeString}");
+                            throw new FormatException($"Неверный формат даты: {existingTimeString} или {ticketTimeString}");
                         }
 
                         if (ticketDateTime > existingDateTime)
                         {
                             worksheet.Row(existingRow.RowNumber()).Delete();
-
                             newTickets.Add(ticket);
                         }
                     }
@@ -87,10 +81,7 @@ namespace YaTrackerParser.Services
 
                 if (newTickets.Count > 0)
                 {
-                    int startRow = 2; 
-
-                    worksheet.Row(startRow).InsertRowsAbove(newTickets.Count);
-
+                    worksheet.Row(2).InsertRowsAbove(newTickets.Count);
                     worksheet.Cell("A2").InsertData(newTickets);
                 }
 

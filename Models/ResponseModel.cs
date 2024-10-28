@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json;
 
 namespace YaTrackerParser.Models;
-
+/// <summary>
+/// Модель ответа от YandexAPI
+/// </summary>
 public class Issue
 {
     [JsonProperty("key")]
