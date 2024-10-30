@@ -1,13 +1,17 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using System.Threading.Tasks;
-
+﻿/// <summary>
+/// Класс авторизации подключения к YaTrackerParser API
+/// </summary>
 public class ApiKeyMiddleware
 {
-    private const string ApiKeyHeaderName = "X-Api-Key"; 
-    private readonly RequestDelegate _next; 
+    private const string ApiKeyHeaderName = "X-Api-Key";
+    private readonly RequestDelegate _next;
     private readonly IConfiguration _configuration;
 
+    /// <summary>
+    /// Создание экземлпряа ApiKeyMiddleware
+    /// </summary>
+    /// <param name="next"></param>
+    /// <param name="configuration">Файл конфигурации</param>
     public ApiKeyMiddleware(RequestDelegate next, IConfiguration configuration)
     {
         _next = next;

@@ -1,39 +1,42 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using YaTrackerParser.Services;
+using YaTrackerParser.Interfaces;
 
-namespace YaTrackerParser
+namespace YaTrackerParser;
+
+/// <summary>
+/// Контроллер API
+/// </summary>
+[ApiController]
+[Route("api/[controller]")]
+public class TrackerController : ControllerBase
 {
-    /// <summary>
-    /// Контроллер API
-    /// </summary>
-    [ApiController]
-    [Route("api/[controller]")]
-    public class TrackerController : ControllerBase
-    {
-        private readonly TicketProcessor _ticketProcessor;
+    private readonly ITicketProcessor _ticketProcessor;
 
-        public TrackerController(TicketProcessor ticketProcessor)
+    /// <summary>
+    /// Создание экземлпяра контроллера
+    /// </summary>
+    /// <param name="ticketProcessor">экземпляр TicketProcessor</param>
+    public TrackerController(ITicketProcessor ticketProcessor)
+    {
+        _ticketProcessor = ticketProcessor;
+    }
+
+    /// <summary>
+    /// Получить список тикетов.
+    /// </summary>
+    /// <returns>Список тикетов.</returns>
+    [HttpGet("tickets")]
+    public async Task<IActionResult> GetTickets()
+    {
+        try
         {
-            _ticketProcessor = ticketProcessor;
+            var tickets = await _ticketProcessor.ProcessTicketsAsync();
+            return Ok(tickets);
         }
 
-        /// <summary>
-        /// Получить список тикетов.
-        /// </summary>
-        /// <returns>Список тикетов.</returns>
-        [HttpGet("tickets")]
-        public async Task<IActionResult> GetTickets()
+        catch (Exception ex)
         {
-            try
-            {
-                var tickets = await _ticketProcessor.ProcessTicketsAsync();
-                return Ok(tickets);
-            }
-
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return BadRequest(ex.Message);
         }
     }
 }

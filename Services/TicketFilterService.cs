@@ -1,16 +1,15 @@
-﻿using YaTrackerParser.Models;
+﻿using YaTrackerParser.Interfaces;
+using YaTrackerParser.Models;
 
 namespace YaTrackerParser.Services
-{
-    /// <summary>
+{   /// <summary>
     /// Фильтрация полученных тикетов от YandexAPI
     /// </summary>
-    public class TicketFilterService
-    {
-        /// <summary>
+    public class TicketFilterService : ITicketFilterService
+    {   /// <summary>
         /// Вывод фильтрованных тикетов
         /// </summary>
-        /// <param name="issues">Получение модели тикетов</param>
+        /// <param name="issues">Модели тикетов</param>
         /// <returns></returns>
         public List<Issue> FilterTickets(List<Issue> issues)
         {

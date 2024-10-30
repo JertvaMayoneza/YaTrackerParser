@@ -1,12 +1,24 @@
+using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using YaTrackerParser.Auth;
+using YaTrackerParser.Interfaces;
+using YaTrackerParser.Models;
 using YaTrackerParser.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 TokenManager.Initialize(builder.Configuration);
 
-builder.Services.AddScoped<TicketProcessor>();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IDatabaseWriterService, DatabaseWriterService>();
+builder.Services.AddScoped<ITicketProcessor, TicketProcessor>();
+builder.Services.AddScoped<IGetTicketsService, GetTicketsService>();
+builder.Services.AddScoped<ITicketFilterService, TicketFilterService>();
+builder.Services.AddScoped<IFileWriterService, FileWriterService>();
+builder.Services.AddScoped<IFileService, FileService>();
+
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<GetTicketsService>(provider =>
@@ -53,9 +65,6 @@ builder.Services.AddSwaggerGen(c =>
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     c.IncludeXmlComments(xmlPath);
 });
-
-builder.Services.AddScoped<TicketFilterService>();
-builder.Services.AddScoped<FileWriterService>();
 
 builder.Services.AddHttpClient("YaTrackerClient", client =>
 {

@@ -2,22 +2,30 @@
 using System.Net.Http.Headers;
 using System.Text;
 using YaTrackerParser.Auth;
+using YaTrackerParser.Interfaces;
 using YaTrackerParser.Models;
-using static YaTrackerParser.Models.RequestBodyModel;
+
+namespace YaTrackerParser.Services;
 
 /// <summary>
 /// Серис для получения тикетов от YandexAPI
 /// </summary>
-public class GetTicketsService
+public class GetTicketsService : IGetTicketsService
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
-    
+
+    /// <summary>
+    /// Создание экземпляра Сервиса
+    /// </summary>
+    /// <param name="httpClientFactory">Экземпляр клиента</param>
+    /// <param name="configuration">Конфигурация клиента</param>
     public GetTicketsService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
     {
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
     }
+
     /// <summary>
     /// Метод для получения тикетов из Yandex Tracker
     /// </summary>
@@ -43,8 +51,8 @@ public class GetTicketsService
 
         Console.WriteLine(jsonRequestBody);
 
-        var content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
-        var response = await client.PostAsync("https://api.tracker.yandex.net/v2/issues/_search", content);
+        using var content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
+        using var response = await client.PostAsync("https://api.tracker.yandex.net/v2/issues/_search", content);
         var jsonResponse = await response.Content.ReadAsStringAsync();
         var responceResult = JsonConvert.DeserializeObject<List<Issue>>(jsonResponse)
             ?? throw new Exception("Пустой ответ от сервера");
