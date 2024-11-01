@@ -1,12 +1,18 @@
 ﻿using Newtonsoft.Json;
 
 namespace YaTrackerParser.Models;
-
+/// <summary>
+/// Структура для филтрации
+/// </summary>
 public class Filter : RequestBodyModel
-{
+{/// <summary>
+/// Имя исполнителя
+/// </summary>
     [JsonProperty("assignee")]
-    public Assignee Assignee { get; set; }
-
+    public required Assignee Assignee { get; set; }
+    /// <summary>
+    /// Статус тикета
+    /// </summary>
     [JsonProperty("status")]
-    public Status Status { get; set; }
+    public required Status Status { get; set; }
 }

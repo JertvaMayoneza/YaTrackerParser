@@ -39,9 +39,7 @@ public class DatabaseWriterService : IDatabaseWriterService
             if (existingTicket != null)
             {
                 existingTicket.Time = ticket.Time;
-                existingTicket.Description = ticket.Description;
                 existingTicket.UpdatedBy = ticket.UpdatedBy;
-                existingTicket.Theme = ticket.Theme;
             }
             else
             {
