@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using YaTrackerParser.Interfaces;
+using YaTrackerParser.Contracts.Interfaces;
 
-namespace YaTrackerParser;
+namespace YaTrackerParser.Controllers;
 
 /// <summary>
 /// Контроллер для получения файла с актуальными тикетами

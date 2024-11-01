@@ -1,4 +1,6 @@
-﻿/// <summary>
+﻿namespace YaTrackerParser.Middleware;
+
+/// <summary>
 /// Класс авторизации подключения к YaTrackerParser API
 /// </summary>
 public class ApiKeyMiddleware

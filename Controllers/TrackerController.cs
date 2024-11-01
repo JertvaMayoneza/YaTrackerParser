@@ -1,42 +1,66 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using YaTrackerParser.Interfaces;
+﻿using System.Text;
+using Microsoft.AspNetCore.Mvc;
+using RabbitMQ.Client;
 
-namespace YaTrackerParser;
-
-/// <summary>
-/// Контроллер API
-/// </summary>
-[ApiController]
-[Route("api/[controller]")]
-public class TrackerController : ControllerBase
+namespace YaTrackerParser.Controllers
 {
-    private readonly ITicketProcessor _ticketProcessor;
-
     /// <summary>
-    /// Создание экземлпяра контроллера
+    /// Контроллер для управления задачами обработки тикетов.
     /// </summary>
-    /// <param name="ticketProcessor">экземпляр TicketProcessor</param>
-    public TrackerController(ITicketProcessor ticketProcessor)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class TrackerController : ControllerBase
     {
-        _ticketProcessor = ticketProcessor;
-    }
+        private readonly IConnectionFactory _connectionFactory;
 
-    /// <summary>
-    /// Получить список тикетов.
-    /// </summary>
-    /// <returns>Список тикетов.</returns>
-    [HttpGet("tickets")]
-    public async Task<IActionResult> GetTickets()
-    {
-        try
+        /// <summary>
+        /// Инициализирует экземпляр <see cref="TrackerController"/> с фабрикой подключений RabbitMQ.
+        /// </summary>
+        /// <param name="connectionFactory">Фабрика подключений RabbitMQ.</param>
+        public TrackerController(IConnectionFactory connectionFactory)
         {
-            var tickets = await _ticketProcessor.ProcessTicketsAsync();
-            return Ok(tickets);
+            _connectionFactory = connectionFactory;
         }
 
-        catch (Exception ex)
+        /// <summary>
+        /// Отправляет сообщение о начале обработки тикетов в очередь RabbitMQ.
+        /// </summary>
+        /// <returns>
+        /// Возвращает HTTP 200 (OK) в случае успешной отправки сообщения, 
+        /// или HTTP 400 (Bad Request) в случае ошибки.
+        /// </returns>
+        /// <response code="200">Задача обработки тикетов успешно отправлена в очередь.</response>
+        /// <response code="400">Ошибка отправки задачи обработки тикетов.</response>
+        [HttpGet("tickets")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetTickets()
         {
-            return BadRequest(ex.Message);
+            try
+            {
+                var message = "Start processing tickets";
+                Console.WriteLine($"[Controller] Sending message: {message}");
+
+                using var connection = await _connectionFactory.CreateConnectionAsync();
+                using var channel = await connection.CreateChannelAsync();
+
+                await channel.QueueDeclareAsync(queue: "ticket_queue", durable: true, exclusive: false, autoDelete: false, arguments: null);
+
+                var body = Encoding.UTF8.GetBytes(message);
+
+                await channel.BasicPublishAsync(exchange: string.Empty,
+                                                 routingKey: "ticket_queue",
+                                                 body: body);
+
+                Console.WriteLine("[Controller] Message sent successfully!");
+
+                return Ok("Tickets processing task has been sent to the queue.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Controller] Error: {ex.Message}");
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

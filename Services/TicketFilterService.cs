@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
-using YaTrackerParser.Interfaces;
-using YaTrackerParser.Models.IssueModel;
+using YaTrackerParser.Contracts.Interfaces;
+using YaTrackerParser.Contracts.DTO.IssueModel;
 
 namespace YaTrackerParser.Services;
 

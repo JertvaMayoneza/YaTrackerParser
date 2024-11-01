@@ -1,5 +1,5 @@
-﻿using YaTrackerParser.Interfaces;
-using YaTrackerParser.Models;
+﻿using YaTrackerParser.Contracts.Interfaces;
+using YaTrackerParser.Contracts.DTO;
 
 namespace YaTrackerParser.Services;
 

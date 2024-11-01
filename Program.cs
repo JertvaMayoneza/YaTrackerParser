@@ -1,16 +1,48 @@
-using Microsoft.EntityFrameworkCore;
 using System.Reflection;
+using RabbitMQ.Client;
 using YaTrackerParser.Auth;
-using YaTrackerParser.Interfaces;
-using YaTrackerParser.Models;
+using YaTrackerParser.Contracts.Interfaces;
 using YaTrackerParser.Services;
+using YaTrackerParser.Data.Context;
+using Microsoft.EntityFrameworkCore;
+using YaTrackerParser.Data.Context.Entites;
+using YaTrackerParser.Data.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
 TokenManager.Initialize(builder.Configuration);
 
+builder.Logging.AddConsole();
+builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
+builder.Logging.AddFilter("Microsoft", LogLevel.Warning);
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .EnableSensitiveDataLogging(false)
+           .EnableDetailedErrors(false));
+
+//Подключение к кролику из Docker контейнера
+//builder.Services.AddSingleton<IConnectionFactory>(new ConnectionFactory
+//{
+//    HostName = "rabbitmq",
+//    UserName = "guest",
+//    Password = "guest"
+//}
+//);
+
+//Подключение к кролику в Docker контейнер из локального запущенного приложения
+builder.Services.AddSingleton<IConnectionFactory>(new ConnectionFactory
+{
+    HostName = "localhost",
+    UserName = "guest",
+    Password = "guest"
+}
+);
+
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+builder.Services.AddScoped<TicketConsumer>();
+builder.Services.AddHostedService<TicketConsumer>();
 
 builder.Services.AddScoped<IDatabaseWriterService, DatabaseWriterService>();
 builder.Services.AddScoped<ITicketProcessor, TicketProcessor>();
@@ -31,12 +63,12 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
 {
-    //c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-    //{
-    //    Title = "Yandex Tracker API",
-    //    Version = "v1",
-    //    Description = "API для работы с тикетами Яндекс Трекера"
-    //});
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "TicketManager",
+        Version = "v1.0",
+        Description = "API для работы с тикетами Яндекс Трекера"
+    });
 
     //c.AddSecurityDefinition("ApiKey", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     //{
@@ -73,14 +105,22 @@ builder.Services.AddHttpClient("YaTrackerClient", client =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseDeveloperExceptionPage();
+//    app.UseSwagger();
+//    app.UseSwaggerUI(c =>
+//    {
+//        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TicketManager V1");
+//    });
+//}
+
+app.UseDeveloperExceptionPage();
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Yandex Tracker API V1");
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "TicketManager V1");
+});
 
 //app.UseMiddleware<ApiKeyMiddleware>();
 

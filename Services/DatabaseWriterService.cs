@@ -1,6 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using YaTrackerParser.Interfaces;
-using YaTrackerParser.Models;
+﻿using YaTrackerParser.Contracts.DTO;
+using YaTrackerParser.Contracts.Interfaces;
+using YaTrackerParser.Data.Context;
+using Microsoft.EntityFrameworkCore;
+using YaTrackerParser.Data.Context.Entites;
+using YaTrackerParser.Data.Repository;
 
 namespace YaTrackerParser.Services;
 
@@ -9,15 +12,15 @@ namespace YaTrackerParser.Services;
 /// </summary>
 public class DatabaseWriterService : IDatabaseWriterService
 {
-    private readonly AppDbContext _context;
+    private readonly IRepository<TicketEntity> _ticketrepository;
 
     /// <summary>
     /// Создание экземпляра
     /// </summary>
     /// <param name="context">DB context</param>
-    public DatabaseWriterService(AppDbContext context)
+    public DatabaseWriterService(IRepository<TicketEntity> ticketrepository)
     {
-        _context = context;
+        _ticketrepository = ticketrepository;
     }
 
     /// <summary>
@@ -32,30 +35,16 @@ public class DatabaseWriterService : IDatabaseWriterService
             if (string.IsNullOrWhiteSpace(ticket.TicketNumber))
                 continue;
 
-            var existingTicket = await _context.Tickets
-                .FirstOrDefaultAsync(t => t.TicketNumber == ticket.TicketNumber)
-                .ConfigureAwait(false);
+            var existingTicket = await _ticketrepository.GetOrCreateAsync(
+                t => t.TicketNumber == ticket.TicketNumber);
 
             if (existingTicket != null)
             {
                 existingTicket.Time = ticket.Time;
-                existingTicket.Description = ticket.Description;
                 existingTicket.UpdatedBy = ticket.UpdatedBy;
-                existingTicket.Theme = ticket.Theme;
-            }
-            else
-            {
-                var newTicket = new TicketEntity
-                {
-                    TicketNumber = ticket.TicketNumber,
-                    Time = ticket.Time,
-                    Theme = ticket.Theme,
-                    Description = ticket.Description,
-                    UpdatedBy = ticket.UpdatedBy
-                };
-                await _context.Tickets.AddAsync(newTicket).ConfigureAwait(false);
+                await _ticketrepository.UpdateAsync(existingTicket);
             }
         }
-        await _context.SaveChangesAsync().ConfigureAwait(false);
+        await _ticketrepository.SaveChangesAsync();
     }
 }

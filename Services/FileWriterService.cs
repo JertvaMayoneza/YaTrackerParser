@@ -1,7 +1,7 @@
-﻿using ClosedXML.Excel;
-using System.Globalization;
-using YaTrackerParser.Interfaces;
-using YaTrackerParser.Models;
+﻿using System.Globalization;
+using ClosedXML.Excel;
+using YaTrackerParser.Contracts.Interfaces;
+using YaTrackerParser.Contracts.DTO;
 
 namespace YaTrackerParser.Services;
 
@@ -105,10 +105,8 @@ public class FileWriterService : IFileWriterService
 
                     rowNumber++;
                 }
-
             }
             workbook.Save();
         }
     }
-
 }
