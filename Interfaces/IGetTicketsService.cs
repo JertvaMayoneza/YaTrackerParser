@@ -1,4 +1,4 @@
-﻿using YaTrackerParser.Models;
+﻿using YaTrackerParser.Models.IssueModel;
 
 namespace YaTrackerParser.Interfaces;
 /// <summary>

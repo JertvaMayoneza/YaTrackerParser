@@ -27,19 +27,21 @@ public class DatabaseWriterService : IDatabaseWriterService
     /// <returns>void</returns>
     public async Task WriteToDatabaseAsync(IEnumerable<TicketData> tickets)
     {
-        var existingTickets = await _context.Tickets
-            .OrderByDescending(t => t.Time)
-            .Take(30)
-            .ToListAsync();
-
         foreach (var ticket in tickets)
         {
-            var existingTicket = existingTickets
-                .FirstOrDefault(t => t.TicketNumber == ticket.TicketNumber);
+            if (string.IsNullOrWhiteSpace(ticket.TicketNumber))
+                continue;
+
+            var existingTicket = await _context.Tickets
+                .FirstOrDefaultAsync(t => t.TicketNumber == ticket.TicketNumber)
+                .ConfigureAwait(false);
 
             if (existingTicket != null)
             {
                 existingTicket.Time = ticket.Time;
+                existingTicket.Description = ticket.Description;
+                existingTicket.UpdatedBy = ticket.UpdatedBy;
+                existingTicket.Theme = ticket.Theme;
             }
             else
             {
@@ -47,11 +49,13 @@ public class DatabaseWriterService : IDatabaseWriterService
                 {
                     TicketNumber = ticket.TicketNumber,
                     Time = ticket.Time,
-                    Theme = ticket.Theme
+                    Theme = ticket.Theme,
+                    Description = ticket.Description,
+                    UpdatedBy = ticket.UpdatedBy
                 };
-                await _context.Tickets.AddAsync(newTicket);
+                await _context.Tickets.AddAsync(newTicket).ConfigureAwait(false);
             }
         }
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync().ConfigureAwait(false);
     }
 }

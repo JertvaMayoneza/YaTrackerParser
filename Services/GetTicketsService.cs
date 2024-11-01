@@ -4,6 +4,7 @@ using System.Text;
 using YaTrackerParser.Auth;
 using YaTrackerParser.Interfaces;
 using YaTrackerParser.Models;
+using YaTrackerParser.Models.IssueModel;
 
 namespace YaTrackerParser.Services;
 
@@ -54,6 +55,9 @@ public class GetTicketsService : IGetTicketsService
         using var content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
         using var response = await client.PostAsync("https://api.tracker.yandex.net/v2/issues/_search", content);
         var jsonResponse = await response.Content.ReadAsStringAsync();
+
+        Console.WriteLine(jsonResponse);
+
         var responceResult = JsonConvert.DeserializeObject<List<Issue>>(jsonResponse)
             ?? throw new Exception("Пустой ответ от сервера");
 

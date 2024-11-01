@@ -27,9 +27,10 @@ public class FileWriterService : IFileWriterService
             worksheet.Cell("A1").Value = "Номер заявки";
             worksheet.Cell("B1").Value = "Время";
             worksheet.Cell("C1").Value = "Тема";
+            worksheet.Cell("D1").Value = "Описание";
+            worksheet.Cell("E1").Value = "Обновил";
 
             worksheet.Cell("A2").InsertData(tickets);
-
             workbook.SaveAs(_filePath);
         }
         else
@@ -84,9 +85,30 @@ public class FileWriterService : IFileWriterService
             if (newTickets.Count > 0)
             {
                 worksheet.Row(2).InsertRowsAbove(newTickets.Count);
-                worksheet.Cell("A2").InsertData(newTickets);
+                int rowNumber = 2;
+                foreach (var ticket in newTickets)
+                {
+                    worksheet.Cell(rowNumber, 1).Value = ticket.TicketNumber;
+                    worksheet.Cell(rowNumber, 2).Value = ticket.Time;
+                    worksheet.Cell(rowNumber, 3).Value = ticket.Theme;
+                    worksheet.Cell(rowNumber, 4).Value = ticket.Description;
+                    worksheet.Cell(rowNumber, 5).Value = ticket.UpdatedBy;
+
+                    if (ticket.UpdatedBy.Trim() != "Александр Елкин")
+                    {
+                        worksheet.Cell(rowNumber, 5).Style.Fill.BackgroundColor = XLColor.Red;
+                    }
+                    else
+                    {
+                        worksheet.Cell(rowNumber, 5).Style.Fill.BackgroundColor = XLColor.Green;
+                    }
+
+                    rowNumber++;
+                }
+
             }
             workbook.Save();
         }
     }
+
 }

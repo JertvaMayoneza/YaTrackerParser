@@ -46,7 +46,9 @@ public class TicketProcessor : ITicketProcessor
             {
                 TicketNumber = issue.Key ?? "Не указано",
                 Time = issue.UpdatedAt?.ToString("g") ?? "Не указано",
-                Theme = issue.Summary ?? "Не указано"
+                Theme = issue.Summary ?? "Не указано",
+                Description = issue.Description ?? "Не указано",
+                UpdatedBy = issue.UpdatedBy.Display ?? "Не указано"
             })
             .ToList();
 

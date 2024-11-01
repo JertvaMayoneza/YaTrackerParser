@@ -11,8 +11,8 @@ using YaTrackerParser.Models;
 namespace YaTrackerParser.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20241030123459_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20241101110658_AddDescriptionToTickets")]
+    partial class AddDescriptionToTickets
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

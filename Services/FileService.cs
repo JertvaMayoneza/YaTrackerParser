@@ -8,8 +8,7 @@ namespace YaTrackerParser.Services;
 /// </summary>
 public class FileService : IFileService
 {
-    private readonly string _filePath = "C:\\Users\\elkin\\Documents\\tickets.xlsx"; // Не забыть поменять
-
+    private readonly string _filePath = @"C:\Users\mrasv\OneDrive\Рабочий стол\Отчет.xlsx";
     /// <summary>
     /// Метод для отправки актуального файла с тикетами
     /// </summary>

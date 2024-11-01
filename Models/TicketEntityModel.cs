@@ -9,4 +9,6 @@ public class TicketEntity
     public string TicketNumber { get; set; }
     public string Time { get; set; }
     public string Theme { get; set; }
+    public string Description { get; set; }
+    public string UpdatedBy { get; set; }
 }
