@@ -2,54 +2,69 @@
 using RabbitMQ.Client.Events;
 using System.Text;
 using YaTrackerParser.Interfaces;
-using YaTrackerParser.Models;
 
 public class TicketConsumer : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly IConnectionFactory _connectionFactory;
+    private const string QueueName = "ticket_queue";
 
-    public TicketConsumer(IServiceProvider serviceProvider)
+    public TicketConsumer(IServiceProvider serviceProvider, IConnectionFactory connectionFactory)
     {
         _serviceProvider = serviceProvider;
+        _connectionFactory = connectionFactory;
     }
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var factory = new ConnectionFactory { HostName = "localhost" };
+        var factory = _connectionFactory;
+
         using var connection = await factory.CreateConnectionAsync();
         using var channel = await connection.CreateChannelAsync();
 
-        await channel.QueueDeclareAsync(queue: "ticket_queue", 
-                                        durable: false,
-                                        exclusive: false,
-                                        autoDelete: false,
-                                        arguments: null);
+        await channel.QueueDeclareAsync(
+            queue: QueueName,
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: null);
 
-        Console.WriteLine(" [*] Waiting for messages.");
+        Console.WriteLine($" [*] Waiting for messages in '{QueueName}' queue...");
 
         var consumer = new AsyncEventingBasicConsumer(channel);
-        consumer.ReceivedAsync += (model, ea) =>
+
+        consumer.ReceivedAsync += async (model, ea) =>
         {
             var body = ea.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
 
-            var tickets = System.Text.Json.JsonSerializer.Deserialize<List<TicketData>>(message);
+            Console.WriteLine($" [x] Received: {message}");
 
-            using var scope = _serviceProvider.CreateScope();
-            var filterService = scope.ServiceProvider.GetRequiredService<ITicketFilterService>();
-            var dbWriterService = scope.ServiceProvider.GetRequiredService<IDatabaseWriterService>();
-            var fileWriterService = scope.ServiceProvider.GetRequiredService<IFileWriterService>();
+            try
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var ticketProcessor = scope.ServiceProvider.GetRequiredService<ITicketProcessor>();
 
-            // Обработка данных
-            var filteredTickets = filterService.FilterTickets(tickets);
-            await dbWriterService.WriteToDatabaseAsync(filteredTickets);
-            fileWriterService.WriteToExcel(filteredTickets);
+                if (message == "Start processing tickets")
+                {
+                    Console.WriteLine(" [*] Starting ticket processing...");
+                    await ticketProcessor.ProcessTicketsAsync();
+                    Console.WriteLine(" [*] Ticket processing completed!");
+                }
+
+                await channel.BasicAckAsync(ea.DeliveryTag, false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($" [!] Error processing message: {ex.Message}");
+            }
         };
 
-        await channel.BasicConsumeAsync("ticket_queue", 
-                                        autoAck: true,
-                                        consumer: consumer);
+        await channel.BasicConsumeAsync(
+            queue: QueueName,
+            autoAck: false,
+            consumer: consumer);
 
-        return Task.CompletedTask;
+        await Task.Delay(Timeout.Infinite, stoppingToken);
     }
 }

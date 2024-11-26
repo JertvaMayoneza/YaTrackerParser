@@ -50,13 +50,13 @@ public class GetTicketsService : IGetTicketsService
         var requestBodySection = _configuration.GetSection("YandexTracker:RequestBody");
         var jsonRequestBody = JsonConvert.SerializeObject(requestBodySection.Get<RequestBody>());
 
-        Console.WriteLine(jsonRequestBody);
+        //Console.WriteLine(jsonRequestBody);
 
         using var content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
         using var response = await client.PostAsync("https://api.tracker.yandex.net/v2/issues/_search", content);
         var jsonResponse = await response.Content.ReadAsStringAsync();
 
-        Console.WriteLine(jsonResponse);
+        //Console.WriteLine(jsonResponse);
 
         var responceResult = JsonConvert.DeserializeObject<List<Issue>>(jsonResponse)
             ?? throw new Exception("Пустой ответ от сервера");

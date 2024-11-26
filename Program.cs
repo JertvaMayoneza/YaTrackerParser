@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using RabbitMQ.Client;
 using System.Reflection;
 using YaTrackerParser.Auth;
 using YaTrackerParser.Interfaces;
@@ -9,8 +11,25 @@ var builder = WebApplication.CreateBuilder(args);
 
 TokenManager.Initialize(builder.Configuration);
 
+builder.Logging.AddConsole();
+builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
+builder.Logging.AddFilter("Microsoft", LogLevel.Warning);
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .EnableSensitiveDataLogging(false)
+           .EnableDetailedErrors(false));    
+
+
+builder.Services.AddSingleton<IConnectionFactory>(new ConnectionFactory
+{
+    HostName = "localhost",
+    UserName = "guest",
+    Password = "guest"
+}
+);
+builder.Services.AddScoped<TicketConsumer>();
+builder.Services.AddHostedService<TicketConsumer>();
 
 builder.Services.AddScoped<IDatabaseWriterService, DatabaseWriterService>();
 builder.Services.AddScoped<ITicketProcessor, TicketProcessor>();
@@ -31,12 +50,12 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
 {
-    //c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-    //{
-    //    Title = "Yandex Tracker API",
-    //    Version = "v1",
-    //    Description = "API дл€ работы с тикетами яндекс “рекера"
-    //});
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "TicketManager",
+        Version = "v1.0",
+        Description = "API дл€ работы с тикетами яндекс “рекера"
+    });
 
     //c.AddSecurityDefinition("ApiKey", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     //{
@@ -78,7 +97,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Yandex Tracker API V1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TicketManager V1");
     });
 }
 

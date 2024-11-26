@@ -1,53 +1,49 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using YaTrackerParser.Interfaces;
 using RabbitMQ.Client;
 using System.Text;
+using YaTrackerParser.Interfaces;
 
-namespace YaTrackerParser;
-
-
-[ApiController]
-[Route("api/[controller]")]
-public class TrackerController : ControllerBase
+namespace YaTrackerParser
 {
-    private readonly ITicketProcessor _ticketProcessor;
-
-    public TrackerController(ITicketProcessor ticketProcessor)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class TrackerController : ControllerBase
     {
-        _ticketProcessor = ticketProcessor;
-    }
+        private readonly IConnectionFactory _connectionFactory;
 
-    [HttpGet("tickets")]
-    public async Task<IActionResult> GetTickets()
-    {
-        try
+        public TrackerController(IConnectionFactory connectionFactory)
         {
-            var tickets = await _ticketProcessor.ProcessTicketsAsync();
-
-            var factory = new ConnectionFactory { HostName = "localhost" };
-            using var connection = await factory.CreateConnectionAsync();
-            using var channel = await connection.CreateChannelAsync();
-
-            await channel.QueueDeclareAsync(queue: "ticket_queue",
-                                 durable: true,
-                                 exclusive: false,
-                                 autoDelete: false,
-                                 arguments: null);
-
-            var message = System.Text.Json.JsonSerializer.Serialize(tickets);
-            var body = Encoding.UTF8.GetBytes(message);
-
-            await channel.BasicPublishAsync(exchange: string.Empty,
-                                 routingKey: "ticket_queue",
-                                 body: body);
-
-            return Ok("Tickets are being processed.");
+            _connectionFactory = connectionFactory;
         }
-        catch (Exception ex)
+
+        [HttpGet("tickets")]
+        public async Task<IActionResult> GetTickets()
         {
-            return BadRequest(ex.Message);
+            try
+            {
+                var message = "Start processing tickets";
+                Console.WriteLine($"[Controller] Sending message: {message}");
+
+                using var connection = await _connectionFactory.CreateConnectionAsync();
+                using var channel = await connection.CreateChannelAsync();
+
+                await channel.QueueDeclareAsync(queue: "ticket_queue", durable: true, exclusive: false, autoDelete: false, arguments: null);
+
+                var body = Encoding.UTF8.GetBytes(message);
+
+                await channel.BasicPublishAsync(exchange: string.Empty,
+                                                 routingKey: "ticket_queue",
+                                                 body: body);
+
+                Console.WriteLine("[Controller] Message sent successfully!");
+
+                return Ok("Tickets processing task has been sent to the queue.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Controller] Error: {ex.Message}");
+                return BadRequest(ex.Message);
+            }
         }
     }
-
 }
-
