@@ -21,6 +21,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
            .EnableDetailedErrors(false));    
 
 
+//builder.Services.AddSingleton<IConnectionFactory>(new ConnectionFactory
+//{
+//    HostName = "rabbitmq",
+//    UserName = "guest",
+//    Password = "guest"
+//}
+//);
+
 builder.Services.AddSingleton<IConnectionFactory>(new ConnectionFactory
 {
     HostName = "localhost",
@@ -28,6 +36,7 @@ builder.Services.AddSingleton<IConnectionFactory>(new ConnectionFactory
     Password = "guest"
 }
 );
+
 builder.Services.AddScoped<TicketConsumer>();
 builder.Services.AddHostedService<TicketConsumer>();
 
@@ -92,14 +101,22 @@ builder.Services.AddHttpClient("YaTrackerClient", client =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseDeveloperExceptionPage();
+//    app.UseSwagger();
+//    app.UseSwaggerUI(c =>
+//    {
+//        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TicketManager V1");
+//    });
+//}
+
+app.UseDeveloperExceptionPage();
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TicketManager V1");
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "TicketManager V1");
+});
 
 //app.UseMiddleware<ApiKeyMiddleware>();
 

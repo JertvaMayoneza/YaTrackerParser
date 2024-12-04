@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RabbitMQ.Client;
 using System.Text;
-using YaTrackerParser.Interfaces;
 
 namespace YaTrackerParser
 {
