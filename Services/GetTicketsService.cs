@@ -2,9 +2,9 @@
 using System.Text;
 using Newtonsoft.Json;
 using YaTrackerParser.Auth;
-using YaTrackerParser.Contracts.Interfaces;
 using YaTrackerParser.Contracts.DTO;
 using YaTrackerParser.Contracts.DTO.IssueModel;
+using YaTrackerParser.Contracts.Interfaces;
 
 namespace YaTrackerParser.Services;
 

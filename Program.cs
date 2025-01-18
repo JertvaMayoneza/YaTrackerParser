@@ -1,12 +1,11 @@
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
 using YaTrackerParser.Auth;
 using YaTrackerParser.Contracts.Interfaces;
-using YaTrackerParser.Services;
 using YaTrackerParser.Data.Context;
-using Microsoft.EntityFrameworkCore;
-using YaTrackerParser.Data.Context.Entites;
 using YaTrackerParser.Data.Repository;
+using YaTrackerParser.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

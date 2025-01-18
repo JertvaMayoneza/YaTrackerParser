@@ -14,12 +14,16 @@
   <ItemGroup>
     <Compile Remove="YaTrackerParser.Contracts\**" />
     <Compile Remove="YaTrackerParser.Data\**" />
+    <Compile Remove="YaTrackerParser.Tests\**" />
     <Content Remove="YaTrackerParser.Contracts\**" />
     <Content Remove="YaTrackerParser.Data\**" />
+    <Content Remove="YaTrackerParser.Tests\**" />
     <EmbeddedResource Remove="YaTrackerParser.Contracts\**" />
     <EmbeddedResource Remove="YaTrackerParser.Data\**" />
+    <EmbeddedResource Remove="YaTrackerParser.Tests\**" />
     <None Remove="YaTrackerParser.Contracts\**" />
     <None Remove="YaTrackerParser.Data\**" />
+    <None Remove="YaTrackerParser.Tests\**" />
   </ItemGroup>
 
   <ItemGroup>

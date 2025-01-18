@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using ClosedXML.Excel;
-using YaTrackerParser.Contracts.Interfaces;
 using YaTrackerParser.Contracts.DTO;
+using YaTrackerParser.Contracts.Interfaces;
 
 namespace YaTrackerParser.Services;
 

@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
-using YaTrackerParser.Contracts.Interfaces;
 using YaTrackerParser.Contracts.DTO.IssueModel;
+using YaTrackerParser.Contracts.Interfaces;
 
 namespace YaTrackerParser.Services;
 
@@ -17,7 +17,9 @@ public class TicketFilterService : ITicketFilterService
     public List<Issue> FilterTickets(List<Issue> issues)
     {
         return issues
-            .Where(issue => !string.IsNullOrEmpty(issue.Key) && issue.UpdatedAt != DateTime.MinValue)
+            .Where(issue => !string.IsNullOrEmpty(issue.Key) 
+                            && issue.UpdatedAt != DateTime.MinValue
+                            && !string.IsNullOrWhiteSpace(issue.Description))
             .Select(issue =>
             {
                 issue.Description = CleanDescription(issue.Description);

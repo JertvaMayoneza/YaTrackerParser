@@ -1,9 +1,6 @@
 ﻿using YaTrackerParser.Contracts.DTO;
 using YaTrackerParser.Contracts.Interfaces;
-using YaTrackerParser.Data.Context;
-using Microsoft.EntityFrameworkCore;
 using YaTrackerParser.Data.Context.Entites;
-using YaTrackerParser.Data.Repository;
 
 namespace YaTrackerParser.Services;
 
@@ -27,7 +24,7 @@ public class DatabaseWriterService : IDatabaseWriterService
     /// Метод для записи тикетов в БД
     /// </summary>
     /// <param name="tickets">Отфильтрованные тикеты после сервиса TicketService</param>
-    /// <returns>void</returns>
+    /// <returns>Запись тикетов в БД</returns>
     public async Task WriteToDatabaseAsync(IEnumerable<TicketData> tickets)
     {
         foreach (var ticket in tickets)
