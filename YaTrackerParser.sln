@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YaTrackerParser.Data", "YaT
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YaTrackerParser.Tests", "YaTrackerParser.Tests\YaTrackerParser.Tests.csproj", "{717FBA5E-3033-49E6-9E86-9D810B4870DF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YaTrackerParser.Infrastructure", "YaTrackerParser.Infrastructure\YaTrackerParser.Infrastructure.csproj", "{8FD22F69-591F-4E05-91C9-6C3BBA5312AA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{717FBA5E-3033-49E6-9E86-9D810B4870DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{717FBA5E-3033-49E6-9E86-9D810B4870DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{717FBA5E-3033-49E6-9E86-9D810B4870DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FD22F69-591F-4E05-91C9-6C3BBA5312AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FD22F69-591F-4E05-91C9-6C3BBA5312AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FD22F69-591F-4E05-91C9-6C3BBA5312AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FD22F69-591F-4E05-91C9-6C3BBA5312AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

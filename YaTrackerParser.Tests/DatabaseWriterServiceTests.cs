@@ -1,8 +1,4 @@
-using DocumentFormat.OpenXml.Spreadsheet;
 using Moq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Xunit;
 using YaTrackerParser.Contracts.DTO;
 using YaTrackerParser.Contracts.DTO.IssueModel;
 using YaTrackerParser.Contracts.Interfaces;

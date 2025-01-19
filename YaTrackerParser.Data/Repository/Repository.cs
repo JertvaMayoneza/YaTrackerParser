@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using YaTrackerParser.Contracts.Interfaces;
 using YaTrackerParser.Data.Context;
-using YaTrackerParser.Data.Context.Entites;
 
 namespace YaTrackerParser.Data.Repository;
 
@@ -53,26 +52,8 @@ public class Repository<T> : IRepository<T> where T : class
         await _context.SaveChangesAsync();
     }
 
-    public async Task<T?> GetOrCreateAsync(Expression<Func<T, bool>> predicate)
+    public async Task<T?> FindSingleAsync(Expression<Func<T, bool>> predicate)
     {
-        var existingEntity = await _dbSet.Where(predicate).FirstOrDefaultAsync();
-        if (existingEntity != null)
-        {
-            return existingEntity;
-        }
-
-        var newEntity = Activator.CreateInstance<T>();
-        if (newEntity is TicketEntity ticketEntity)
-        {
-            ticketEntity.TicketNumber = "TicketNumber";
-            ticketEntity.Time = "Time";
-            ticketEntity.Theme = "Theme";
-            ticketEntity.Description = "Description";
-            ticketEntity.UpdatedBy = "UpdatedBy";
-        }
-        await _dbSet.AddAsync(newEntity);
-        await _context.SaveChangesAsync();
-
-        return newEntity;
+        return await _dbSet.FirstOrDefaultAsync(predicate);
     }
 }

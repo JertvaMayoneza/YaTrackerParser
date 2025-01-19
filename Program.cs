@@ -5,6 +5,8 @@ using YaTrackerParser.Auth;
 using YaTrackerParser.Contracts.Interfaces;
 using YaTrackerParser.Data.Context;
 using YaTrackerParser.Data.Repository;
+using YaTrackerParser.Factories;
+using YaTrackerParser.Infrastructure;
 using YaTrackerParser.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,6 +42,9 @@ builder.Services.AddSingleton<IConnectionFactory>(new ConnectionFactory
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
+builder.Services.AddScoped<TicketFactory>();
+
+builder.Services.AddScoped<IMessageBrokerService, RabbitMQMessageBroker>();
 builder.Services.AddScoped<TicketConsumer>();
 builder.Services.AddHostedService<TicketConsumer>();
 

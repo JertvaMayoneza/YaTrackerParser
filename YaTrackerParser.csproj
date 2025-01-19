@@ -14,15 +14,19 @@
   <ItemGroup>
     <Compile Remove="YaTrackerParser.Contracts\**" />
     <Compile Remove="YaTrackerParser.Data\**" />
+    <Compile Remove="YaTrackerParser.Infrastructure\**" />
     <Compile Remove="YaTrackerParser.Tests\**" />
     <Content Remove="YaTrackerParser.Contracts\**" />
     <Content Remove="YaTrackerParser.Data\**" />
+    <Content Remove="YaTrackerParser.Infrastructure\**" />
     <Content Remove="YaTrackerParser.Tests\**" />
     <EmbeddedResource Remove="YaTrackerParser.Contracts\**" />
     <EmbeddedResource Remove="YaTrackerParser.Data\**" />
+    <EmbeddedResource Remove="YaTrackerParser.Infrastructure\**" />
     <EmbeddedResource Remove="YaTrackerParser.Tests\**" />
     <None Remove="YaTrackerParser.Contracts\**" />
     <None Remove="YaTrackerParser.Data\**" />
+    <None Remove="YaTrackerParser.Infrastructure\**" />
     <None Remove="YaTrackerParser.Tests\**" />
   </ItemGroup>
 
@@ -43,6 +47,7 @@
   <ItemGroup>
     <ProjectReference Include="YaTrackerParser.Contracts\YaTrackerParser.Contracts.csproj" />
     <ProjectReference Include="YaTrackerParser.Data\YaTrackerParser.Data.csproj" />
+    <ProjectReference Include="YaTrackerParser.Infrastructure\YaTrackerParser.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

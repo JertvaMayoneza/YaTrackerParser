@@ -17,7 +17,7 @@ public class TicketFilterService : ITicketFilterService
     public List<Issue> FilterTickets(List<Issue> issues)
     {
         return issues
-            .Where(issue => !string.IsNullOrEmpty(issue.Key) 
+            .Where(issue => !string.IsNullOrEmpty(issue.Key)
                             && issue.UpdatedAt != DateTime.MinValue
                             && !string.IsNullOrWhiteSpace(issue.Description))
             .Select(issue =>

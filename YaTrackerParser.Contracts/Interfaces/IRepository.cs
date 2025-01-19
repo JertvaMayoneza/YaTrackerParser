@@ -57,5 +57,5 @@ public interface IRepository<T> where T : class
     /// <param name="predicate"></param>
     /// <param name="createFunc"></param>
     /// <returns>Создает уникальную запись или обновляет информацию по уже имеющейся</returns>
-    Task<T?> GetOrCreateAsync(Expression<Func<T, bool>> predicate);
+    Task<T?> FindSingleAsync(Expression<Func<T, bool>> predicate);
 }

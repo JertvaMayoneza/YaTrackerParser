@@ -1,4 +1,6 @@
 ﻿using System.Text;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using YaTrackerParser.Contracts.Interfaces;
@@ -65,7 +67,6 @@ public class TicketConsumer : BackgroundService
                     Console.WriteLine(" [*] Ticket processing completed!");
                 }
 
-                // Подтверждение обработки сообщения.
                 await channel.BasicAckAsync(ea.DeliveryTag, false);
             }
             catch (Exception ex)
@@ -74,13 +75,11 @@ public class TicketConsumer : BackgroundService
             }
         };
 
-        // Начинает потребление сообщений.
         await channel.BasicConsumeAsync(
             queue: QueueName,
             autoAck: false,
             consumer: consumer);
 
-        // Блокирует выполнение до остановки токена.
         await Task.Delay(Timeout.Infinite, stoppingToken);
     }
 }

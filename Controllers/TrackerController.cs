@@ -1,6 +1,5 @@
-﻿using System.Text;
-using Microsoft.AspNetCore.Mvc;
-using RabbitMQ.Client;
+﻿using Microsoft.AspNetCore.Mvc;
+using YaTrackerParser.Contracts.Interfaces;
 
 namespace YaTrackerParser.Controllers
 {
@@ -11,15 +10,15 @@ namespace YaTrackerParser.Controllers
     [Route("api/[controller]")]
     public class TrackerController : ControllerBase
     {
-        private readonly IConnectionFactory _connectionFactory;
+        private readonly IMessageBrokerService _messageBroker;
 
         /// <summary>
         /// Инициализирует экземпляр <see cref="TrackerController"/> с фабрикой подключений RabbitMQ.
         /// </summary>
-        /// <param name="connectionFactory">Фабрика подключений RabbitMQ.</param>
-        public TrackerController(IConnectionFactory connectionFactory)
+        /// <param name="connectionFactory">Фабрика подключения RabbitMQ.</param>
+        public TrackerController(IMessageBrokerService messageBroker)
         {
-            _connectionFactory = connectionFactory;
+            _messageBroker = messageBroker;
         }
 
         /// <summary>
@@ -32,8 +31,6 @@ namespace YaTrackerParser.Controllers
         /// <response code="200">Задача обработки тикетов успешно отправлена в очередь.</response>
         /// <response code="400">Ошибка отправки задачи обработки тикетов.</response>
         [HttpGet("tickets")]
-        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetTickets()
         {
             try
@@ -41,18 +38,7 @@ namespace YaTrackerParser.Controllers
                 var message = "Start processing tickets";
                 Console.WriteLine($"[Controller] Sending message: {message}");
 
-                using var connection = await _connectionFactory.CreateConnectionAsync();
-                using var channel = await connection.CreateChannelAsync();
-
-                await channel.QueueDeclareAsync(queue: "ticket_queue", durable: true, exclusive: false, autoDelete: false, arguments: null);
-
-                var body = Encoding.UTF8.GetBytes(message);
-
-                await channel.BasicPublishAsync(exchange: string.Empty,
-                                                 routingKey: "ticket_queue",
-                                                 body: body);
-
-                Console.WriteLine("[Controller] Message sent successfully!");
+                await _messageBroker.SendMessageAsync("ticket_queue", message);
 
                 return Ok("Tickets processing task has been sent to the queue.");
             }
